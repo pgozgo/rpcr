@@ -23,7 +23,7 @@ def upload_file():
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
     file.save(filepath)
     # print(f"File saved at: {filepath}")
-    return jsonify({"message": f"{file.filename} uploaded successfully! - {filepath}"}), 200
+    return jsonify({"message": f"{filepath} uploaded successfully!"}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
