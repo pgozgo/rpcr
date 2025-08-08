@@ -22,8 +22,8 @@ def upload_file():
         return jsonify({"error": "No selected file"}), 400
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
     file.save(filepath)
-    print(f"File saved at: {filepath}")
-    return jsonify({"message": f"{file.filename} uploaded successfully!"})
+    # print(f"File saved at: {filepath}")
+    return jsonify({"message": f"{file.filename} uploaded successfully! - {filepath}"}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
