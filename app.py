@@ -19,8 +19,8 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.get("/")
-def home():
-    return {"message": "FastAPI running"}
+def root():
+    return {"message": "Hello from FastAPI"}
 
 def index():
     return {"message": "Auto Rigging API is running."}
@@ -43,3 +43,8 @@ async def upload_file(file: UploadFile = File(...)):
 
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 5000))
+    uvicorn.run("app:app", host="0.0.0.0", port=port)
