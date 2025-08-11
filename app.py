@@ -19,6 +19,9 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.get("/")
+def home():
+    return {"message": "FastAPI running"}
+
 def index():
     return {"message": "Auto Rigging API is running."}
 
