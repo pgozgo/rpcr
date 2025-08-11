@@ -1,29 +1,40 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 import os
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+import shutil
 
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
 
-UPLOAD_FOLDER = 'uploads'
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change to specific domains if needed
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route('/')
-def index():
-    return jsonify({"message": "Auto Rigging API is running."})
+@app.get("/")
+async def index():
+    return {"message": "Auto Rigging API is running."}
 
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-    file.save(filepath)
-    # print(f"File saved at: {filepath}")
-    return jsonify({"message": f"{filepath} uploaded successfully!"}), 200
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No selected file")
+    
+    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    return JSONResponse(content={"message": f"{file.filename} uploaded successfully! - {filepath}"})
+
+
+# 🚀 This lets Railway run it with its own PORTif __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 5000))
+    uvicorn.run("app:app", host="0.0.0.0", port=port)
