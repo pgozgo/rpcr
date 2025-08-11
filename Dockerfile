@@ -9,5 +9,4 @@ COPY . .
 
 EXPOSE 5000
 
-# Railway sets $PORT automatically
-CMD ["python", "app.py"]
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "app:app", "--bind", "0.0.0.0:${PORT}"]
