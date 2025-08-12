@@ -1,15 +1,16 @@
 from fastapi import FastAPI, File, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 import os
 import shutil
+import requests
 
 app = FastAPI()
 
-# Allow CORS for Bubble.io and other clients
+# Allow Bubble.io & other origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can restrict to Bubble domain
+    allow_origins=["*"],  # Restrict to Bubble domain in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -18,32 +19,27 @@ app.add_middleware(
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# Change this to your local Maya machine listener URL
+MAYA_WEBHOOK_URL = "https://5364782e0e2c.ngrok-free.app/process"
+
 @app.get("/")
 def root():
-    return {"message": "Hello from FastAPI"}
-
-def index():
-    return {"message": "Auto Rigging API is running."}
+    return {"message": "FastAPI File Service is running."}
 
 @app.post("/upload")
-async def upload_file(file: UploadFile = File(...)): # async def functions can use the await keyword to pause execution until an asynchronous operation completes, allowing other code to run in the meantime.
+def upload_file(file: UploadFile = File(...)):
+    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # Notify local Maya machine
     try:
-        if not file.filename:
-            return JSONResponse(content={"error": "No file selected"}, status_code=400)
-
-        file_location = os.path.join(UPLOAD_FOLDER, file.filename)
-        
-        with open(file_location, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        return {
-            "message": f"{file.filename} uploaded successfully!",
-            "path": file_location
-        }
-
+        requests.post(MAYA_WEBHOOK_URL, json={"filename": file.filename})
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-    
+        return {"message": f"{file.filename} uploaded but webhook failed: {str(e)}"}
+
+    return {"message": f"{file.filename} uploaded successfully and webhook sent."}
+
 @app.get("/files")
 def list_files():
     files = os.listdir(UPLOAD_FOLDER)
