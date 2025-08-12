@@ -64,7 +64,7 @@ def delete_file(filename: str):
     os.remove(file_path)
     return {"message": f"{filename} deleted successfully"}
 
-# if __name__ == "__main__":
-#     import uvicorn
-#     port = int(os.environ.get("PORT", 5000))
-#     uvicorn.run("app:app", host="0.0.0.0", port=port)
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 5000))
+    uvicorn.run("app:app", host="0.0.0.0", port=port)
