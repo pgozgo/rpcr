@@ -61,7 +61,7 @@ async def delete_file(filename: str):
 
 def run_maya_batch(file_path):
     if not os.path.exists(MAYA_BATCH_PATH):
-        print("[ERROR] Maya batch executable not found.")
+        print("[ERROR] Maya batch executable not found.", MAYA_BATCH_PATH)
         return
 
     cmd = [
